@@ -332,6 +332,7 @@ SELECT  TO_CHAR(first_date, 'yyyy-mm') as cohort_date,
         user_id,
         sale_price
 FROM B_1
+WHERE created_at BETWEEN '2023-01-01' AND '2023-12-31'
 )
 
 -- B2_3: total revenue and total customer 
