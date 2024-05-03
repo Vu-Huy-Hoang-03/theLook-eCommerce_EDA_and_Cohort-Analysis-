@@ -115,17 +115,36 @@ WHERE stt>1;
 -- Analyzing
 /* Amount of Customers and Orders each months from January 2019 to April 2022 */
 -- Output: month_year ( yyyy-mm) , total_user, total_order
+WITH B1 AS(
 SELECT	TO_CHAR(created_at, 'yyyy-mm') as month_year,
 	COUNT(order_id) as total_order,
 	COUNT(DISTINCT user_id) as total_user
 FROM orders
-WHERE 	DATE(created_at) BETWEEN '2019-01-01' AND '2022-04-30'
+WHERE 	DATE(created_at) BETWEEN '2023-01-01' AND '2023-12-31'
 	AND status  = 'Complete'
 GROUP BY TO_CHAR(created_at, 'yyyy-mm')
+)
+SELECT	month_year,
+	total_order,
+	COALESCE(
+		ROUND(100.00*(total_order - pre_order) / pre_order,2)
+		, '0.00') as order_growth,
+	total_user,
+	COALESCE(
+		ROUND(100.00*(total_user - pre_customer) / pre_order,2) 
+		, '0.00') as customer_growth
+FROM (
+SELECT	month_year,
+		total_order,
+		LAG(total_order) OVER(ORDER BY month_year) as pre_order,
+		total_user,
+		LAG(total_user) OVER(ORDER BY month_year) as pre_customer
+FROM B1) as B2
 
 /* Average Order Value (AOV) and Monthly Active Customers 
 - from January 2019 to April 2022 */
 -- Output: month_year ( yyyy-mm), distinct_users, average_order_value
+WITH B1 AS(
 SELECT	TO_CHAR(a.created_at, 'yyyy-mm') as month_year,
 		ROUND(
 		  AVG(b.sale_price)
@@ -134,8 +153,25 @@ SELECT	TO_CHAR(a.created_at, 'yyyy-mm') as month_year,
 FROM orders as a
 INNER JOIN order_item as b
 	ON a.order_id = b.order_id
-WHERE DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30'
+WHERE DATE(a.created_at) BETWEEN '2023-01-01' AND '2023-12-31'
 GROUP BY TO_CHAR(a.created_at, 'yyyy-mm')
+)
+SELECT	month_year,
+	average_order_value,
+	COALESCE(
+		ROUND(100.00*(average_order_value - pre_order) / pre_order,2)
+		, '0.00') as value_growth,
+	total_user,
+	COALESCE(
+		ROUND(100.00*(total_user - pre_customer) / pre_customer,2) 
+		, '0.00') as customer_growth
+FROM (
+SELECT	month_year,
+	average_order_value,
+	LAG(average_order_value) OVER(ORDER BY month_year) as pre_order,
+	total_user,
+	LAG(total_user) OVER(ORDER BY month_year) as pre_customer
+FROM B1) as B2
 
 /* Customer Segmentation by Age: Identify the youngest and oldest customers 
 for each gender from January 2019 to April 2022 */
