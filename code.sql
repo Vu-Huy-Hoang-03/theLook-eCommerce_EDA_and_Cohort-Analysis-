@@ -113,7 +113,7 @@ WHERE stt>1;
 	
 
 -- Analyzing
-/* Amount of Customers and Orders each months from January 2019 to April 2022 */
+/* Amount of Customers and Orders each months in 2023 */
 -- Output: month_year ( yyyy-mm) , total_user, total_order
 WITH B1 AS(
 SELECT	TO_CHAR(created_at, 'yyyy-mm') as month_year,
@@ -142,7 +142,7 @@ SELECT	month_year,
 FROM B1) as B2
 
 /* Average Order Value (AOV) and Monthly Active Customers 
-- from January 2019 to April 2022 */
+- in 2023 */
 -- Output: month_year ( yyyy-mm), distinct_users, average_order_value
 WITH B1 AS(
 SELECT	TO_CHAR(a.created_at, 'yyyy-mm') as month_year,
@@ -174,7 +174,7 @@ SELECT	month_year,
 FROM B1) as B2
 
 /* Customer Segmentation by Age: Identify the youngest and oldest customers 
-for each gender from January 2019 to April 2022 */
+for each gender in 2023 */
 -- Output: full_name, gender, age, tag (youngest-oldest)
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
 	gender,
@@ -182,7 +182,7 @@ for each gender from January 2019 to April 2022 */
 	'youngest' as tag
 FROM users as a
 WHERE age IN (SELECT MIN(age) FROM users GROUP BY gender)
-	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+	AND DATE(a.created_at) BETWEEN '2023-01-01' AND '2023-12-31')
 UNION ALL
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
 	gender,
@@ -190,7 +190,7 @@ UNION ALL
 	'oldest' as tag
 FROM users as a
 WHERE age IN (SELECT MAX(age) FROM users GROUP BY gender)
-	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+	AND DATE(a.created_at) BETWEEN '2023-01-01' AND '2023-12-31')
 
 -- analyzing the results
 -- Create temporary table for the above result
@@ -202,7 +202,7 @@ AS (
 	'youngest' as tag
 FROM users as a
 WHERE age IN (SELECT MIN(age) FROM users GROUP BY gender)
-	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+	AND DATE(a.created_at) BETWEEN '2023-01-01' AND '2023-12-31')
 UNION ALL
 (SELECT	CONCAT(first_name, ' ', last_name) as full_name,
 	gender,
@@ -210,7 +210,7 @@ UNION ALL
 	'oldest' as tag
 FROM users as a
 WHERE age IN (SELECT MAX(age) FROM users GROUP BY gender)
-	AND DATE(a.created_at) BETWEEN '2019-01-01' AND '2022-04-30')
+	AND DATE(a.created_at) BETWEEN '2023-01-01' AND '2023-12-31')
 )
 
 -- analyzing	
@@ -313,12 +313,15 @@ FROM B_1
 /* Cohort Analysis */
 -- B_1: find the first purchased date + selecting needed data
 WITH B_1 AS(
+SELECT *
+FROM (
 SELECT  created_at,
         MIN(created_at) OVER(PARTITION BY user_id) as first_date,
         user_id,
         sale_price
 FROM order_item
-WHERE status NOT IN ('Cancelled', 'Returned')
+WHERE status NOT IN ('Cancelled', 'Returned') ) as B1_1
+WHERE first_date BETWEEN '2023-01-01' AND '2023-12-31'
 )
 
 -- B_2: monthly difference from the first purchase time (index column)
