@@ -258,58 +258,7 @@ WHERE DATE(a.created_at) BETWEEN '2022-01-15' AND '2022-04-15'
 GROUP BY DATE(a.created_at),b.category
 ORDER BY b.category,dates
 
-
-/* CREATING DATASET */
--- B1:
-WITH B_1 AS (
-SELECT  EXTRACT(MONTH FROM c.created_at) as  month,
-        EXTRACT(YEAR FROM c.created_at) as  year,
-        b.category,
-        ROUND(
-              SUM(a.sale_price),2) as TPV,
-        COUNT(a.order_id) as TPO,
-        ROUND(
-              SUM(b.cost),2) as total_cost,
-        ROUND(
-              SUM(a.sale_price)-SUM(b.cost),2) as total_profit,
-        ROUND(1.00*
-              (SUM(a.sale_price)-SUM(b.cost))
-              / SUM(b.cost)
-              ,2) as profit_to_cost_ratio
-FROM order_item as a
-INNER JOIN products as b
-	ON a.product_id = b.id
-INNER JOIN orders as c
-	ON a.order_id =c.order_id
-GROUP BY year, month, b.category
-ORDER BY year, month, b.category
-)
--- B2: 
-SELECT  month,
-        year,
-        category,
-        TPV,
-        TPO,
-        COALESCE(
-        ROUND(100.00*
-                (TPV - prev_TPV) / prev_TPV
-                ,2) || '%'
-                ,'0.00%') as Revenue_growth,
-        COALESCE(
-        ROUND(100.00*
-                (TPO - prev_TPO) / prev_TPV
-                ,2) || '%' 
-                ,'0.00%') as Order_growth,
-        total_cost,
-        total_profit,
-        profit_to_cost_ratio
-FROM (
-SELECT  *,
-        LAG(TPV) OVER(PARTITION BY category ORDER BY year,month) as prev_TPV,
-        LAG(TPO) OVER(PARTITION BY category ORDER BY year,month) as prev_TPO
-FROM B_1
-) as tablet
-
+	
 /* Cohort Analysis */
 -- B_1: find the first purchased date + selecting needed data
 WITH B_1 AS(
