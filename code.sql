@@ -1,4 +1,4 @@
--- Creating Tables & Importing Data
+-- Creating Tables & Importing Data ------------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE order_item
 (
 id numeric primary key,
@@ -60,7 +60,7 @@ created_at timestamp
 );
 
 
--- Cleaning & Structuring Data
+-- Cleaning & Structuring Data -----------------------------------------------------------------------------------------------------------------------------------
 -- 0 values IS NULL
 select * from order_item
 where id is NULL
@@ -112,7 +112,7 @@ from users
 WHERE stt>1;
 	
 
--- Analyzing
+-- Analyzing -----------------------------------------------------------------------------------------------------------------------------------------------------
 /* Amount of Customers and Orders each months in 2023 */
 -- Output: month_year ( yyyy-mm) , total_user, total_order
 WITH B1 AS(
@@ -260,7 +260,7 @@ ORDER BY b.category,dates
 
 	
 /* Cohort Analysis */
--- B_1: find the first purchased date + selecting needed data
+-- step_1: find the first purchased date + selecting needed data
 WITH B_1 AS(
 SELECT *
 FROM (
@@ -273,7 +273,7 @@ WHERE status NOT IN ('Cancelled', 'Returned') ) as B1_1
 WHERE first_date BETWEEN '2023-01-01' AND '2023-12-31'
 )
 
--- B_2: monthly difference from the first purchase time (index column)
+-- step_2: monthly difference from the first purchase time (index column)
 , B_2 AS(
 SELECT  TO_CHAR(first_date, 'yyyy-mm') as cohort_date,
         (EXTRACT(YEAR FROM created_at) - EXTRACT(YEAR FROM first_date))*12
@@ -284,7 +284,7 @@ FROM B_1
 WHERE created_at BETWEEN '2023-01-01' AND '2023-12-31'
 )
 
--- B2_3: total revenue and total customer 
+-- step_3: total revenue and total customer 
 -- group by first time purchasing (cohort_date) and index
 -- where index <=12
 , B_3 AS(
@@ -297,7 +297,7 @@ GROUP BY cohort_date, index
 ORDER BY cohort_date, index
 )
 
--- B2_4: Cohort Chart = Pivot CASE-WHEN
+-- step_4: Cohort Chart = Pivot CASE-WHEN
 SELECT  cohort_date,
         SUM(CASE WHEN index = 1 then customer ELSE 0 END) as t1,
         SUM(CASE WHEN index = 2 then customer ELSE 0 END) as t2,
